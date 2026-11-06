@@ -1,0 +1,84 @@
+(define (problem Conveyor_Belt_Manipulation)
+  (:domain robosuite)
+  (:language Inspect bottles on conveyor belt and reject defective ones)
+    (:regions
+      (bottle_spawn_1
+          (:target conveyor_belt)
+          (:ranges (
+              (0.58 -0.04 0.66 0.04)
+            )
+          )
+      )
+      (bottle_spawn_2
+          (:target conveyor_belt)
+          (:ranges (
+              (0.44 -0.04 0.52 0.04)
+            )
+          )
+      )
+      (bottle_spawn_3
+          (:target conveyor_belt)
+          (:ranges (
+              (0.30 -0.04 0.38 0.04)
+            )
+          )
+      )
+      (bottle_spawn_4
+          (:target conveyor_belt)
+          (:ranges (
+              (0.16 -0.04 0.24 0.04)
+            )
+          )
+      )
+      (bottle_spawn_5
+          (:target conveyor_belt)
+          (:ranges (
+              (0.02 -0.04 0.10 0.04)
+            )
+          )
+      )
+      (bin_region
+          (:target conveyor_belt)
+          (:ranges (
+              (-0.01 0.12 0.01 0.15)
+            )
+          )
+      )
+      (contain_region
+          (:target reject_bin_1)
+      )
+    )
+
+  (:fixtures
+    conveyor_belt - table
+  )
+
+  (:objects
+    good_bottle_1 good_bottle_2 good_bottle_3 - good_bottle
+    glass_bottle_1 glass_bottle_2 - glass_bottle
+    reject_bin_1 - reject_bin
+  )
+
+  (:obj_of_interest
+    good_bottle_1
+    glass_bottle_1
+    good_bottle_2
+    glass_bottle_2
+    good_bottle_3
+    reject_bin_1
+  )
+
+  (:init
+    (On good_bottle_1 conveyor_belt_bottle_spawn_1)
+    (On glass_bottle_1 conveyor_belt_bottle_spawn_2)
+    (On good_bottle_2 conveyor_belt_bottle_spawn_3)
+    (On glass_bottle_2 conveyor_belt_bottle_spawn_4)
+    (On good_bottle_3 conveyor_belt_bottle_spawn_5)
+    (On reject_bin_1 conveyor_belt_bin_region)
+  )
+
+  (:goal
+    (And (In glass_bottle_1 reject_bin_1_contain_region) (In glass_bottle_2 reject_bin_1_contain_region))
+  )
+
+)

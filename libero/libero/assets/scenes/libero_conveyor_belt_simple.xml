@@ -1,0 +1,38 @@
+<mujoco model="conveyor_belt_arena">
+  <asset>
+    <texture builtin="gradient" height="256" rgb1=".4 .6 .8" rgb2=".1 .1 .2" type="skybox" width="256"/>
+    <texture file="../textures/light-gray-floor-tile.png" type="2d" name="texplane"/>
+    <material name="floorplane" reflectance="0.2" shininess="0.2" specular="0.2" texrepeat="5 5" texture="texplane" texuniform="true"/>
+    <material name="belt_mat" rgba="0.3 0.3 0.35 1" specular="0.1" shininess="0.1"/>
+    <material name="frame_mat" rgba="0.55 0.55 0.58 1" specular="0.5" shininess="0.5" reflectance="0.2"/>
+    <texture file="../textures/light-gray-plaster.png" type="2d" name="tex-wall"/>
+    <material name="walls_mat" reflectance="0.1" shininess="0.1" specular="0.15" texrepeat="4 4" texture="tex-wall" texuniform="true"/>
+  </asset>
+  <worldbody>
+    <geom condim="3" group="1" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
+    <geom pos="0.5 3 1.5" quat="0.7071 0.7071 0 0" size="2.5 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_left_visual" material="walls_mat"/>
+    <geom pos="0.5 -3 1.5" quat="0.7071 -0.7071 0 0" size="2.5 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_right_visual" material="walls_mat"/>
+    <geom pos="-2 0 1.5" quat="0.5 0.5 0.5 0.5" size="3 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rear_visual" material="walls_mat"/>
+    <geom pos="3 0 1.5" quat="0.5 0.5 -0.5 -0.5" size="3 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_front_visual" material="walls_mat"/>
+    <body name="table" pos="0 0 0.4">
+      <geom pos="0 0 0" size="0.8 0.2 0.025" type="box" group="0" name="table_collision" friction="0.6 0.005 0.0001"/>
+      <geom pos="0 0 0" size="0.8 0.2 0.025" type="box" conaffinity="0" contype="0" group="1" name="table_visual" material="belt_mat"/>
+      <site pos="0 0 0.025" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>
+      <geom pos="0 -0.21 0.04" size="0.8 0.01 0.015" type="box" conaffinity="0" contype="0" group="1" name="rail_left" material="frame_mat"/>
+      <geom pos="0 0.21 0.04" size="0.8 0.01 0.015" type="box" conaffinity="0" contype="0" group="1" name="rail_right" material="frame_mat"/>
+      <geom pos="0.7 -0.18 -0.2" size="0.02 0.2" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg1_visual" material="frame_mat"/>
+      <geom pos="0.7 0.18 -0.2" size="0.02 0.2" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg2_visual" material="frame_mat"/>
+      <geom pos="-0.7 -0.18 -0.2" size="0.02 0.2" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg3_visual" material="frame_mat"/>
+      <geom pos="-0.7 0.18 -0.2" size="0.02 0.2" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg4_visual" material="frame_mat"/>
+      <geom pos="0 -0.18 -0.2" size="0.7 0.01 0.01" type="box" conaffinity="0" contype="0" group="1" name="brace_left" material="frame_mat"/>
+      <geom pos="0 0.18 -0.2" size="0.7 0.01 0.01" type="box" conaffinity="0" contype="0" group="1" name="brace_right" material="frame_mat"/>
+    </body>
+    <light name="light1" diffuse=".8 .8 .8" dir="0 0 -1" directional="true" pos="0 0 3" specular="0.3 0.3 0.3" castshadow="true"/>
+    <light name="light2" diffuse=".4 .4 .4" dir="0 -.2 -1" directional="false" pos="-1.0 -1.0 2.5" specular="0.1 0.1 0.1" castshadow="false"/>
+    <camera mode="fixed" name="frontview" pos="1.0 0 1.45" quat="0.56 0.43 0.43 0.56"/>
+    <camera mode="fixed" name="birdview" pos="-0.2 0 3.0" quat="0.7071 0 0 0.7071"/>
+    <camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>
+    <camera mode="fixed" name="sideview" pos="-0.057 1.45 1.488" quat="0.010 0.007 0.591 0.806" fovy="50"/>
+    <camera mode="fixed" name="sideview_wide" pos="0.1 -1.1 1.15" quat="0.85 0.35 0.15 0.35" fovy="50"/>
+  </worldbody>
+</mujoco>

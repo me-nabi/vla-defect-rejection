@@ -1,0 +1,60 @@
+<mujoco model="reject_bin">
+  <asset>
+    <material name="bin_plastic" rgba="0.85 0.65 0.0 1" specular="0.15" shininess="0.25"/>
+    <material name="bin_label" rgba="0.9 0.15 0.1 1" specular="0.1" shininess="0.1"/>
+  </asset>
+  <worldbody>
+    <body>
+      <body name="object">
+        <!-- Bottom -->
+        <geom type="box" size="0.08 0.06 0.003" pos="0 0 0.003"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="200" friction="0.95 0.3 0.1"
+              group="0" material="bin_plastic"/>
+        <!-- Front wall -->
+        <geom type="box" size="0.08 0.003 0.04" pos="0 -0.057 0.043"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="200" friction="0.95 0.3 0.1"
+              group="0" material="bin_plastic"/>
+        <!-- Back wall -->
+        <geom type="box" size="0.08 0.003 0.04" pos="0 0.057 0.043"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="200" friction="0.95 0.3 0.1"
+              group="0" material="bin_plastic"/>
+        <!-- Left wall -->
+        <geom type="box" size="0.003 0.06 0.04" pos="-0.077 0 0.043"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="200" friction="0.95 0.3 0.1"
+              group="0" material="bin_plastic"/>
+        <!-- Right wall -->
+        <geom type="box" size="0.003 0.06 0.04" pos="0.077 0 0.043"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="200" friction="0.95 0.3 0.1"
+              group="0" material="bin_plastic"/>
+
+        <!-- Visual duplicates -->
+        <geom type="box" size="0.08 0.06 0.003" pos="0 0 0.003"
+              conaffinity="0" contype="0" group="1" material="bin_plastic"/>
+        <geom type="box" size="0.08 0.003 0.04" pos="0 -0.057 0.043"
+              conaffinity="0" contype="0" group="1" material="bin_plastic"/>
+        <geom type="box" size="0.08 0.003 0.04" pos="0 0.057 0.043"
+              conaffinity="0" contype="0" group="1" material="bin_plastic"/>
+        <geom type="box" size="0.003 0.06 0.04" pos="-0.077 0 0.043"
+              conaffinity="0" contype="0" group="1" material="bin_plastic"/>
+        <geom type="box" size="0.003 0.06 0.04" pos="0.077 0 0.043"
+              conaffinity="0" contype="0" group="1" material="bin_plastic"/>
+
+        <!-- REJECT label stripe on front wall -->
+        <geom type="box" size="0.05 0.001 0.01" pos="0 -0.06 0.05"
+              conaffinity="0" contype="0" group="1" material="bin_label"/>
+
+        <!-- Containment site for In predicate -->
+        <site name="contain_region" pos="0 0 0.04" size="0.075 0.055 0.06"
+              rgba="0 0 0 0" type="box"/>
+      </body>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0" name="bottom_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0.083" name="top_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0.08 0.06 0" name="horizontal_radius_site"/>
+    </body>
+  </worldbody>
+</mujoco>

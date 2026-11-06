@@ -1,0 +1,66 @@
+<mujoco model="glass_bottle">
+  <asset>
+    <material name="glass_bottle_body" rgba="0.65 0.75 0.70 0.7" specular="0.8" shininess="0.9" reflectance="0.3"/>
+    <material name="glass_bottle_cap" rgba="0.25 0.25 0.28 1" specular="0.3" shininess="0.4"/>
+    <!-- Defect markers - visible cracks/stains -->
+    <material name="defect_crack" rgba="0.85 0.15 0.10 0.9" specular="0.1" shininess="0.1"/>
+    <material name="defect_stain" rgba="0.7 0.25 0.12 0.85" specular="0.05" shininess="0.05"/>
+  </asset>
+  <worldbody>
+    <body>
+      <body name="object">
+        <!-- Body cylinder -->
+        <geom type="cylinder" size="0.015 0.035" pos="0 0 0.035"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="500" friction="0.95 0.3 0.1"
+              conaffinity="0" contype="0" group="1"
+              material="glass_bottle_body"/>
+        <!-- Shoulder taper -->
+        <geom type="cylinder" size="0.012 0.008" pos="0 0 0.078"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="500" friction="0.95 0.3 0.1"
+              conaffinity="0" contype="0" group="1"
+              material="glass_bottle_body"/>
+        <!-- Neck -->
+        <geom type="cylinder" size="0.006 0.02" pos="0 0 0.106"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="500" friction="0.95 0.3 0.1"
+              conaffinity="0" contype="0" group="1"
+              material="glass_bottle_body"/>
+        <!-- Cap -->
+        <geom type="cylinder" size="0.007 0.004" pos="0 0 0.130"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="500" friction="0.95 0.3 0.1"
+              conaffinity="0" contype="0" group="1"
+              material="glass_bottle_cap"/>
+
+        <!-- DEFECT: crack line on body -->
+        <geom type="box" size="0.002 0.016 0.018" pos="0.014 0.003 0.035"
+              conaffinity="0" contype="0" group="1"
+              material="defect_crack"/>
+        <!-- DEFECT: diagonal crack -->
+        <geom type="box" size="0.002 0.012 0.008" pos="-0.012 -0.006 0.055"
+              quat="0.966 0 0 0.259"
+              conaffinity="0" contype="0" group="1"
+              material="defect_crack"/>
+        <!-- DEFECT: stain/discoloration on lower body -->
+        <geom type="cylinder" size="0.016 0.010" pos="0.001 -0.001 0.015"
+              conaffinity="0" contype="0" group="1"
+              material="defect_stain"/>
+        <!-- DEFECT: chip near shoulder -->
+        <geom type="sphere" size="0.005" pos="0.011 0.005 0.072"
+              conaffinity="0" contype="0" group="1"
+              material="defect_crack"/>
+
+        <!-- Collision geometry -->
+        <geom type="cylinder" size="0.022 0.055" pos="0 0 0.055"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="800" friction="1.0 0.5 0.1"
+              group="0" rgba="0.8 0.8 0.8 0."/>
+      </body>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.005" name="bottom_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0.134" name="top_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0.02 0.02 0" name="horizontal_radius_site"/>
+    </body>
+  </worldbody>
+</mujoco>

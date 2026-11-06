@@ -1,0 +1,47 @@
+(define (problem Conveyor_Belt_Manipulation)
+  (:domain robosuite)
+  (:language Pick the defective glass bottle from the conveyor belt and place it in the reject bin)
+    (:regions
+      (bottle_spawn_region
+          (:target conveyor_belt)
+          (:ranges (
+              (0.00 -0.06 0.10 0.06)
+            )
+          )
+      )
+      (bin_region
+          (:target conveyor_belt)
+          (:ranges (
+              (-0.20 0.08 -0.10 0.16)
+            )
+          )
+      )
+      (contain_region
+          (:target reject_bin_1)
+      )
+    )
+
+  (:fixtures
+    conveyor_belt - table
+  )
+
+  (:objects
+    glass_bottle_1 - glass_bottle
+    reject_bin_1 - reject_bin
+  )
+
+  (:obj_of_interest
+    glass_bottle_1
+    reject_bin_1
+  )
+
+  (:init
+    (On glass_bottle_1 conveyor_belt_bottle_spawn_region)
+    (On reject_bin_1 conveyor_belt_bin_region)
+  )
+
+  (:goal
+    (And (In glass_bottle_1 reject_bin_1_contain_region))
+  )
+
+)

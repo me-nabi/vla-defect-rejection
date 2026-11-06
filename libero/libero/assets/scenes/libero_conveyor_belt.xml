@@ -1,0 +1,100 @@
+<mujoco model="conveyor_belt_arena">
+  <asset>
+    <texture builtin="gradient" height="256" rgb1=".15 .15 .18" rgb2=".08 .08 .10" type="skybox" width="256"/>
+
+    <!-- Industrial concrete floor -->
+    <texture file="../textures/dark_floor_texture.png" type="2d" name="texplane"/>
+    <material name="floorplane" reflectance="0.05" shininess="0.1"
+              specular="0.1" texrepeat="5 5" texture="texplane" texuniform="true"/>
+
+    <!-- belt surface - dark rubber -->
+    <material name="belt_mat" rgba="0.12 0.12 0.14 1" specular="0.02" shininess="0.05" reflectance="0.0"/>
+
+    <!-- belt frame - industrial steel -->
+    <material name="frame_mat" rgba="0.45 0.45 0.47 1" specular="0.7" shininess="0.7" reflectance="0.35"/>
+
+    <!-- Industrial walls - concrete/metal panel -->
+    <texture file="../textures/dark_gray_plaster.png" type="2d" name="tex-wall"/>
+    <material name="walls_mat" reflectance="0.02" shininess="0.1" specular="0.15" texrepeat="4 4" texture="tex-wall" texuniform="true"/>
+
+    <!-- Safety stripe material (yellow/black) -->
+    <material name="safety_stripe" rgba="0.85 0.65 0.0 1" specular="0.1" shininess="0.2"/>
+    <material name="safety_black" rgba="0.15 0.15 0.15 1" specular="0.05" shininess="0.1"/>
+
+    <!-- Caution label -->
+    <material name="caution_mat" rgba="0.9 0.2 0.1 1" specular="0.2" shininess="0.3"/>
+
+    <!-- Pillar/beam material -->
+    <material name="beam_mat" rgba="0.38 0.38 0.40 1" specular="0.5" shininess="0.4" reflectance="0.2"/>
+
+    <!-- ceiling -->
+    <material name="ceiling_mat" rgba="0.25 0.25 0.27 1" specular="0.05" shininess="0.05"/>
+  </asset>
+
+  <worldbody>
+    <!-- Floor - concrete -->
+    <geom condim="3" group="1" material="floorplane" name="floor" pos="0 0 0" size="3 3 .125" type="plane"/>
+
+    <!-- Walls - industrial panels -->
+    <geom pos="0.5 3 1.5" quat="0.7071 0.7071 0 0" size="2.5 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_left_visual" material="walls_mat"/>
+    <geom pos="0.5 -3 1.5" quat="0.7071 -0.7071 0 0" size="2.5 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_right_visual" material="walls_mat"/>
+    <geom pos="-2 0 1.5" quat="0.5 0.5 0.5 0.5" size="3 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_rear_visual" material="walls_mat"/>
+    <geom pos="3 0 1.5" quat="0.5 0.5 -0.5 -0.5" size="3 1.5 0.01" type="box" conaffinity="0" contype="0" group="1" name="wall_front_visual" material="walls_mat"/>
+
+    <!-- Ceiling -->
+    <geom pos="0.5 0 3.0" size="2.5 3 0.02" type="box" conaffinity="0" contype="0" group="1" name="ceiling" material="ceiling_mat"/>
+
+    <!-- Steel support pillars -->
+    <geom pos="-1.0 -1.5 1.0" size="0.05 1.0" type="cylinder" conaffinity="0" contype="0" group="1" name="pillar1" material="beam_mat"/>
+    <geom pos="-1.0 1.5 1.0" size="0.05 1.0" type="cylinder" conaffinity="0" contype="0" group="1" name="pillar2" material="beam_mat"/>
+    <geom pos="2.0 -1.5 1.0" size="0.05 1.0" type="cylinder" conaffinity="0" contype="0" group="1" name="pillar3" material="beam_mat"/>
+    <geom pos="2.0 1.5 1.0" size="0.05 1.0" type="cylinder" conaffinity="0" contype="0" group="1" name="pillar4" material="beam_mat"/>
+
+    <!-- Overhead steel beam -->
+    <geom pos="0.5 0 2.0" size="1.6 0.04 0.04" type="box" conaffinity="0" contype="0" group="1" name="overhead_beam" material="beam_mat"/>
+
+    <!-- Safety floor stripe near belt -->
+    <geom pos="0 -0.45 0.002" size="0.9 0.03 0.001" type="box" conaffinity="0" contype="0" group="1" name="safety1" material="safety_stripe"/>
+    <geom pos="0 0.45 0.002" size="0.9 0.03 0.001" type="box" conaffinity="0" contype="0" group="1" name="safety2" material="safety_stripe"/>
+
+    <!-- Conveyor Belt Body -->
+    <body name="table" pos="0 0 0.4">
+      <!-- Belt surface - collision -->
+      <geom pos="0 0 0" size="0.8 0.2 0.025" type="box" group="0" name="table_collision" friction="0.6 0.005 0.0001"/>
+      <!-- Belt surface - visual -->
+      <geom pos="0 0 0" size="0.8 0.2 0.025" type="box" conaffinity="0" contype="0" group="1" name="table_visual" material="belt_mat"/>
+      <!-- Belt top site -->
+      <site pos="0 0 0.025" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>
+
+      <!-- Side rails - steel -->
+      <geom pos="0 -0.21 0.04" size="0.8 0.01 0.015" type="box" conaffinity="0" contype="0" group="1" name="rail_left" material="frame_mat"/>
+      <geom pos="0 0.21 0.04" size="0.8 0.01 0.015" type="box" conaffinity="0" contype="0" group="1" name="rail_right" material="frame_mat"/>
+
+      <!-- Safety edge stripe on belt -->
+      <geom pos="0 -0.19 0.026" size="0.8 0.005 0.001" type="box" conaffinity="0" contype="0" group="1" name="belt_stripe_l" material="safety_stripe"/>
+      <geom pos="0 0.19 0.026" size="0.8 0.005 0.001" type="box" conaffinity="0" contype="0" group="1" name="belt_stripe_r" material="safety_stripe"/>
+
+      <!-- Legs - steel -->
+      <geom pos="0.7 -0.18 -0.2" size="0.02 0.2" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg1_visual" material="frame_mat"/>
+      <geom pos="0.7 0.18 -0.2" size="0.02 0.2" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg2_visual" material="frame_mat"/>
+      <geom pos="-0.7 -0.18 -0.2" size="0.02 0.2" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg3_visual" material="frame_mat"/>
+      <geom pos="-0.7 0.18 -0.2" size="0.02 0.2" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg4_visual" material="frame_mat"/>
+
+      <!-- Cross-bracing between legs -->
+      <geom pos="0 -0.18 -0.2" size="0.7 0.01 0.01" type="box" conaffinity="0" contype="0" group="1" name="brace_left" material="frame_mat"/>
+      <geom pos="0 0.18 -0.2" size="0.7 0.01 0.01" type="box" conaffinity="0" contype="0" group="1" name="brace_right" material="frame_mat"/>
+    </body>
+
+    <!-- Industrial warehouse lighting -->
+    <light name="light1" diffuse=".7 .7 .75" dir="0 0 -1" directional="false" pos="0.5 0 2.8" specular="0.4 0.4 0.4" castshadow="true"/>
+    <light name="light2" diffuse=".5 .5 .55" dir="0 -.2 -1" directional="false" pos="-1.0 -1.0 2.8" specular="0.2 0.2 0.2" castshadow="false"/>
+    <light name="light3" diffuse=".3 .3 .35" dir="0 .2 -1" directional="false" pos="1.5 1.0 2.8" specular="0.1 0.1 0.1" castshadow="false"/>
+
+    <!-- Cameras -->
+    <camera mode="fixed" name="frontview" pos="1.0 0 1.45" quat="0.56 0.43 0.43 0.56"/>
+    <camera mode="fixed" name="birdview" pos="-0.2 0 3.0" quat="0.7071 0 0 0.7071"/>
+    <camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>
+    <camera mode="fixed" name="sideview" pos="-0.057 1.45 1.488" quat="0.010 0.007 0.591 0.806" fovy="50"/>
+    <camera mode="fixed" name="sideview_wide" pos="0.1 -1.1 1.15" quat="0.85 0.35 0.15 0.35" fovy="50"/>
+  </worldbody>
+</mujoco>
