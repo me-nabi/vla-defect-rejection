@@ -5,14 +5,14 @@
       (bottle_spawn_region
           (:target conveyor_belt)
           (:ranges (
-              (0.00 -0.06 0.10 0.06)
+              (0.00 -0.03 0.06 0.03)
             )
           )
       )
       (bin_region
           (:target conveyor_belt)
           (:ranges (
-              (-0.20 0.08 -0.10 0.16)
+              (-0.26 0.048 -0.04 0.218)
             )
           )
       )

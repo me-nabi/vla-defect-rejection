@@ -1,0 +1,933 @@
+{
+  "mode": "classifier",
+  "episodes": 20,
+  "line_success": 20,
+  "defective_bottles": 28,
+  "defects_flagged": 28,
+  "defects_rejected": 28,
+  "good_bottles": 72,
+  "good_flagged": 0,
+  "good_rejected": 0,
+  "good_in_crate": 72,
+  "bottles_on_floor": 0,
+  "episodes_detail": [
+    {
+      "seed": 1000,
+      "success": true,
+      "truth": {
+        "bottle_2": "tilted_cap",
+        "bottle_3": "tilted_cap"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.037
+        ],
+        "bottle_4": [
+          null,
+          0.038
+        ],
+        "bottle_3": [
+          "tilted_cap",
+          0.994
+        ],
+        "bottle_2": [
+          "tilted_cap",
+          0.992
+        ],
+        "bottle_1": [
+          null,
+          0.033
+        ]
+      },
+      "seconds": 18.1,
+      "defective": 2,
+      "flagged": 2,
+      "correctly_flagged": 2,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 2,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 966
+    },
+    {
+      "seed": 1001,
+      "success": true,
+      "truth": {
+        "bottle_2": "missing_cap",
+        "bottle_4": "tilted_cap"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.039
+        ],
+        "bottle_4": [
+          "tilted_cap",
+          0.994
+        ],
+        "bottle_3": [
+          null,
+          0.038
+        ],
+        "bottle_2": [
+          "missing_cap",
+          0.994
+        ],
+        "bottle_1": [
+          null,
+          0.04
+        ]
+      },
+      "seconds": 17.6,
+      "defective": 2,
+      "flagged": 2,
+      "correctly_flagged": 2,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 2,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_3",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 971
+    },
+    {
+      "seed": 1002,
+      "success": true,
+      "truth": {
+        "bottle_1": "missing_cap"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.038
+        ],
+        "bottle_4": [
+          null,
+          0.043
+        ],
+        "bottle_3": [
+          null,
+          0.049
+        ],
+        "bottle_2": [
+          null,
+          0.037
+        ],
+        "bottle_1": [
+          "missing_cap",
+          0.993
+        ]
+      },
+      "seconds": 13.8,
+      "defective": 1,
+      "flagged": 1,
+      "correctly_flagged": 1,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 1,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_2",
+        "bottle_3",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 772
+    },
+    {
+      "seed": 1003,
+      "success": true,
+      "truth": {
+        "bottle_4": "low_fill"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.04
+        ],
+        "bottle_4": [
+          "low_fill",
+          0.993
+        ],
+        "bottle_3": [
+          null,
+          0.043
+        ],
+        "bottle_2": [
+          null,
+          0.034
+        ],
+        "bottle_1": [
+          null,
+          0.037
+        ]
+      },
+      "seconds": 15.1,
+      "defective": 1,
+      "flagged": 1,
+      "correctly_flagged": 1,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 1,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_2",
+        "bottle_3",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 827
+    },
+    {
+      "seed": 1004,
+      "success": true,
+      "truth": {
+        "bottle_3": "tilted_cap",
+        "bottle_4": "missing_cap"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.041
+        ],
+        "bottle_4": [
+          "missing_cap",
+          0.995
+        ],
+        "bottle_3": [
+          "tilted_cap",
+          0.993
+        ],
+        "bottle_2": [
+          null,
+          0.039
+        ],
+        "bottle_1": [
+          null,
+          0.037
+        ]
+      },
+      "seconds": 17.7,
+      "defective": 2,
+      "flagged": 2,
+      "correctly_flagged": 2,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 2,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_2",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 969
+    },
+    {
+      "seed": 1005,
+      "success": true,
+      "truth": {
+        "bottle_2": "crack"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.035
+        ],
+        "bottle_4": [
+          null,
+          0.039
+        ],
+        "bottle_3": [
+          null,
+          0.037
+        ],
+        "bottle_2": [
+          "crack",
+          1.0
+        ],
+        "bottle_1": [
+          null,
+          0.039
+        ]
+      },
+      "seconds": 14.9,
+      "defective": 1,
+      "flagged": 1,
+      "correctly_flagged": 1,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 1,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_3",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 827
+    },
+    {
+      "seed": 1006,
+      "success": true,
+      "truth": {
+        "bottle_1": "missing_cap",
+        "bottle_3": "low_fill"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.035
+        ],
+        "bottle_4": [
+          null,
+          0.036
+        ],
+        "bottle_3": [
+          "low_fill",
+          0.993
+        ],
+        "bottle_2": [
+          null,
+          0.036
+        ],
+        "bottle_1": [
+          "missing_cap",
+          0.994
+        ]
+      },
+      "seconds": 16.5,
+      "defective": 2,
+      "flagged": 2,
+      "correctly_flagged": 2,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 2,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_2",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 917
+    },
+    {
+      "seed": 1007,
+      "success": true,
+      "truth": {
+        "bottle_1": "particle"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.04
+        ],
+        "bottle_4": [
+          null,
+          0.051
+        ],
+        "bottle_3": [
+          null,
+          0.059
+        ],
+        "bottle_2": [
+          null,
+          0.037
+        ],
+        "bottle_1": [
+          "particle",
+          0.986
+        ]
+      },
+      "seconds": 13.9,
+      "defective": 1,
+      "flagged": 1,
+      "correctly_flagged": 1,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 1,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_2",
+        "bottle_3",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 775
+    },
+    {
+      "seed": 1008,
+      "success": true,
+      "truth": {
+        "bottle_1": "crack",
+        "bottle_5": "chip"
+      },
+      "verdicts": {
+        "bottle_5": [
+          "chip",
+          0.979
+        ],
+        "bottle_4": [
+          null,
+          0.039
+        ],
+        "bottle_3": [
+          null,
+          0.034
+        ],
+        "bottle_2": [
+          null,
+          0.05
+        ],
+        "bottle_1": [
+          "crack",
+          0.996
+        ]
+      },
+      "seconds": 16.8,
+      "defective": 2,
+      "flagged": 2,
+      "correctly_flagged": 2,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 2,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_2",
+        "bottle_3",
+        "bottle_4"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 916
+    },
+    {
+      "seed": 1009,
+      "success": true,
+      "truth": {
+        "bottle_2": "particle"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.033
+        ],
+        "bottle_4": [
+          null,
+          0.04
+        ],
+        "bottle_3": [
+          null,
+          0.04
+        ],
+        "bottle_2": [
+          "particle",
+          1.0
+        ],
+        "bottle_1": [
+          null,
+          0.105
+        ]
+      },
+      "seconds": 14.7,
+      "defective": 1,
+      "flagged": 1,
+      "correctly_flagged": 1,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 1,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_3",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 828
+    },
+    {
+      "seed": 1010,
+      "success": true,
+      "truth": {
+        "bottle_5": "chip"
+      },
+      "verdicts": {
+        "bottle_5": [
+          "chip",
+          0.992
+        ],
+        "bottle_4": [
+          null,
+          0.041
+        ],
+        "bottle_3": [
+          null,
+          0.034
+        ],
+        "bottle_2": [
+          null,
+          0.047
+        ],
+        "bottle_1": [
+          null,
+          0.04
+        ]
+      },
+      "seconds": 14.8,
+      "defective": 1,
+      "flagged": 1,
+      "correctly_flagged": 1,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 1,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_2",
+        "bottle_3",
+        "bottle_4"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 829
+    },
+    {
+      "seed": 1011,
+      "success": true,
+      "truth": {
+        "bottle_1": "chip",
+        "bottle_2": "chip"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.036
+        ],
+        "bottle_4": [
+          null,
+          0.04
+        ],
+        "bottle_3": [
+          null,
+          0.041
+        ],
+        "bottle_2": [
+          "chip",
+          0.996
+        ],
+        "bottle_1": [
+          "chip",
+          0.99
+        ]
+      },
+      "seconds": 15.1,
+      "defective": 2,
+      "flagged": 2,
+      "correctly_flagged": 2,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 2,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_3",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 858
+    },
+    {
+      "seed": 1012,
+      "success": true,
+      "truth": {
+        "bottle_3": "tilted_cap",
+        "bottle_5": "low_fill"
+      },
+      "verdicts": {
+        "bottle_5": [
+          "low_fill",
+          0.995
+        ],
+        "bottle_4": [
+          null,
+          0.04
+        ],
+        "bottle_3": [
+          "tilted_cap",
+          0.993
+        ],
+        "bottle_2": [
+          null,
+          0.039
+        ],
+        "bottle_1": [
+          null,
+          0.042
+        ]
+      },
+      "seconds": 17.2,
+      "defective": 2,
+      "flagged": 2,
+      "correctly_flagged": 2,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 2,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_2",
+        "bottle_4"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 967
+    },
+    {
+      "seed": 1013,
+      "success": true,
+      "truth": {
+        "bottle_2": "crack"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.044
+        ],
+        "bottle_4": [
+          null,
+          0.042
+        ],
+        "bottle_3": [
+          null,
+          0.037
+        ],
+        "bottle_2": [
+          "crack",
+          0.997
+        ],
+        "bottle_1": [
+          null,
+          0.042
+        ]
+      },
+      "seconds": 14.5,
+      "defective": 1,
+      "flagged": 1,
+      "correctly_flagged": 1,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 1,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_3",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 825
+    },
+    {
+      "seed": 1014,
+      "success": true,
+      "truth": {
+        "bottle_2": "chip"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.041
+        ],
+        "bottle_4": [
+          null,
+          0.035
+        ],
+        "bottle_3": [
+          null,
+          0.038
+        ],
+        "bottle_2": [
+          "chip",
+          0.992
+        ],
+        "bottle_1": [
+          null,
+          0.039
+        ]
+      },
+      "seconds": 14.6,
+      "defective": 1,
+      "flagged": 1,
+      "correctly_flagged": 1,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 1,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_3",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 828
+    },
+    {
+      "seed": 1015,
+      "success": true,
+      "truth": {
+        "bottle_3": "low_fill",
+        "bottle_5": "chip"
+      },
+      "verdicts": {
+        "bottle_5": [
+          "chip",
+          0.995
+        ],
+        "bottle_4": [
+          null,
+          0.04
+        ],
+        "bottle_3": [
+          "low_fill",
+          0.994
+        ],
+        "bottle_2": [
+          null,
+          0.04
+        ],
+        "bottle_1": [
+          null,
+          0.134
+        ]
+      },
+      "seconds": 17.3,
+      "defective": 2,
+      "flagged": 2,
+      "correctly_flagged": 2,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 2,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_2",
+        "bottle_4"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 971
+    },
+    {
+      "seed": 1016,
+      "success": true,
+      "truth": {},
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.036
+        ],
+        "bottle_4": [
+          null,
+          0.044
+        ],
+        "bottle_3": [
+          null,
+          0.037
+        ],
+        "bottle_2": [
+          null,
+          0.037
+        ],
+        "bottle_1": [
+          null,
+          0.042
+        ]
+      },
+      "seconds": 11.7,
+      "defective": 0,
+      "flagged": 0,
+      "correctly_flagged": 0,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 0,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_2",
+        "bottle_3",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 673
+    },
+    {
+      "seed": 1017,
+      "success": true,
+      "truth": {
+        "bottle_1": "particle",
+        "bottle_3": "particle"
+      },
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.04
+        ],
+        "bottle_4": [
+          null,
+          0.036
+        ],
+        "bottle_3": [
+          "particle",
+          0.999
+        ],
+        "bottle_2": [
+          null,
+          0.043
+        ],
+        "bottle_1": [
+          "particle",
+          0.999
+        ]
+      },
+      "seconds": 16.2,
+      "defective": 2,
+      "flagged": 2,
+      "correctly_flagged": 2,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 2,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_2",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 917
+    },
+    {
+      "seed": 1018,
+      "success": true,
+      "truth": {
+        "bottle_4": "low_fill",
+        "bottle_5": "crack"
+      },
+      "verdicts": {
+        "bottle_5": [
+          "crack",
+          0.997
+        ],
+        "bottle_4": [
+          "low_fill",
+          0.995
+        ],
+        "bottle_3": [
+          null,
+          0.04
+        ],
+        "bottle_2": [
+          null,
+          0.04
+        ],
+        "bottle_1": [
+          null,
+          0.036
+        ]
+      },
+      "seconds": 17.9,
+      "defective": 2,
+      "flagged": 2,
+      "correctly_flagged": 2,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 2,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_2",
+        "bottle_3"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 969
+    },
+    {
+      "seed": 1019,
+      "success": true,
+      "truth": {},
+      "verdicts": {
+        "bottle_5": [
+          null,
+          0.036
+        ],
+        "bottle_4": [
+          null,
+          0.038
+        ],
+        "bottle_3": [
+          null,
+          0.036
+        ],
+        "bottle_2": [
+          null,
+          0.04
+        ],
+        "bottle_1": [
+          null,
+          0.035
+        ]
+      },
+      "seconds": 12.0,
+      "defective": 0,
+      "flagged": 0,
+      "correctly_flagged": 0,
+      "missed_defects": [],
+      "false_flags": [],
+      "rejected_defects": 0,
+      "rejected_good": [],
+      "good_in_crate": [
+        "bottle_1",
+        "bottle_2",
+        "bottle_3",
+        "bottle_4",
+        "bottle_5"
+      ],
+      "good_not_delivered": [],
+      "on_floor": [],
+      "steps": 677
+    }
+  ]
+}

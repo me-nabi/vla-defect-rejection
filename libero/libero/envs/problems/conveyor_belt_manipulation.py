@@ -1,15 +1,43 @@
 import numpy as np
-from robosuite.utils.mjcf_utils import new_site
+import robosuite.utils.transform_utils as T
+from robosuite.utils.mjcf_utils import new_element, new_site
 from libero.libero.envs.bddl_base_domain import BDDLBaseDomain, register_problem
 from libero.libero.envs.robots import *
 from libero.libero.envs.objects import *
 from libero.libero.envs.predicates import *
 from libero.libero.envs.regions import *
 from libero.libero.envs.utils import rectangle2xyrange
+from libero.libero.envs.inspection_defects import DEFECT_TYPES, BottleAppearance
+from libero.libero.envs.arenas.conveyor_belt_arena import BeltExit
+
+
+def _look_at_quat(pos, target):
+    """MuJoCo camera quaternion (w, x, y, z) for a camera at `pos` looking at `target`, z up."""
+    z_cam = np.asarray(pos, float) - np.asarray(target, float)
+    z_cam /= np.linalg.norm(z_cam)
+    x_cam = np.cross([0.0, 0.0, 1.0], z_cam)
+    x_cam /= np.linalg.norm(x_cam)
+    y_cam = np.cross(z_cam, x_cam)
+    return T.convert_quat(T.mat2quat(np.stack([x_cam, y_cam, z_cam], axis=1)), to="wxyz")
 
 
 @register_problem
 class Conveyor_Belt_Manipulation(BDDLBaseDomain):
+    # Inspection station: two cameras facing each other across the belt at this x.
+    # Bottles are photographed as they pass it, before reaching the robot.
+    INSPECTION_X = 0.20
+    INSPECTION_CAMERAS = ("inspect_front", "inspect_back")
+    INSPECTION_CAM_DIST = 0.30      # camera distance from the belt centre line (m)
+    INSPECTION_CAM_FOVY = 34        # frames the tallest design (16 cm) with a margin
+    INSPECTION_CAM_Z = 1.0          # camera height; they aim at the middle of the frame:
+    INSPECTION_TARGET_Z = 0.985     # belt surface 0.90 + 8.5 cm
+    # Overhead RGB-D camera for the bottle detector: looks straight down at the belt from
+    # just upstream of the inspection station to past the robot's pick zone.
+    TRACK_CAMERA = "track_cam"
+    TRACK_CAM_POS = (0.20, 0.0, 1.55)
+    TRACK_CAM_FOVY = 42             # vertical (across the belt); 4:3 images span x = -0.19 .. 0.59
+    TRACK_CAM_SIZE = (384, 512)     # (height, width)
+
     def __init__(self, bddl_file_name, *args, **kwargs):
         self.workspace_name = "conveyor_belt"
         self.visualization_sites_list = []
@@ -21,6 +49,22 @@ class Conveyor_Belt_Manipulation(BDDLBaseDomain):
         self.belt_active = kwargs.pop("belt_active", True)
         # Extra belt length (m) on the upstream (+x) end; 0 keeps the original 1 m belt.
         belt_extension = kwargs.pop("belt_extension", 0.0)
+        # Bend + exit belt + crate after the robot (instead of the belt running into the
+        # robot's pedestal). The bend and exit belt are separate conveyors: they keep running
+        # while the main belt is paused for a pick, at `exit_speed` (default 3x belt_speed).
+        self.belt_layout = BeltExit() if kwargs.pop("belt_exit", True) else None
+        self.exit_speed = kwargs.pop("exit_speed", None)
+        # Inspection bottles: probabilities of 0, 1, 2, ... defective bottles per episode,
+        # and which defect types to draw from.
+        self.defect_count_probs = kwargs.pop("defect_count_probs", (0.15, 0.40, 0.45))
+        self.defect_types = tuple(kwargs.pop("defect_types", DEFECT_TYPES))
+        # Bottle designs on the line and how often each appears (see bottle_shapes.py).
+        variants = kwargs.pop("bottle_variants", None)
+        if variants is not None:
+            InspectionBottle.VARIANT_WEIGHTS = dict(variants) if isinstance(variants, dict) \
+                else {v: 1.0 for v in variants}
+        self.bottle_defects = {}       # inspection bottle name -> defect type, or None if good
+        self._bottle_looks = {}
 
         kwargs.update(
             {"robots": [f"Mounted{robot_name}" for robot_name in kwargs["robots"]]}
@@ -42,6 +86,7 @@ class Conveyor_Belt_Manipulation(BDDLBaseDomain):
         kwargs["scene_properties"] = {
             **kwargs["scene_properties"],
             "belt_extension": belt_extension,
+            "belt_exit": self.belt_layout,
         }
 
         self._bottle_joint_ids = []
@@ -67,51 +112,158 @@ class Conveyor_Belt_Manipulation(BDDLBaseDomain):
                     model.jnt_qposadr[joint_id],
                     model.jnt_dofadr[joint_id],
                 )
-        self._belt_geom_id = model.geom_name2id("table_collision")
+        # Conveyor surfaces: the main belt plus the bend and exit segments.
+        belt_names = ["table_collision"] + [
+            model.geom_id2name(g) for g in range(model.ngeom)
+            if (model.geom_id2name(g) or "").startswith(("belt_curve", "belt_exit")) and model.geom_id2name(g).endswith("_col")
+        ]
+        self._belt_geom_ids = {model.geom_name2id(n) for n in belt_names}
+        # The belt geoms are static, so real friction against them would brake a moving
+        # bottle at its base and tip it over. Belt surfaces and bottles get near-zero
+        # friction instead, and _pre_action drives each bottle like belt friction would.
+        # Contacts use the larger of the two frictions, so grasps (finger pads: 2), the bin
+        # and the crate still grip bottles normally.
+        for g in self._belt_geom_ids:
+            model.geom_friction[g, 0] = self.BELT_SURFACE_FRICTION
+        self._bottle_geoms = [g for g in range(model.ngeom)
+                              if model.body_rootid[model.geom_bodyid[g]] in self._bottle_root_to_adr
+                              and model.geom_contype[g] != 0]
+        for g in self._bottle_geoms:
+            model.geom_friction[g, 0] = self.BOTTLE_FRICTION
+        # The free joint sits on a massless outer body whose origin is the bottle's base;
+        # the drive force must act on the body that carries the mass (at its centre of mass),
+        # or it would tip the bottle.
+        self._mass_body = {}
+        for root in self._bottle_root_to_adr:
+            bodies = [b for b in range(model.nbody) if model.body_rootid[b] == root]
+            self._mass_body[root] = max(bodies, key=lambda b: model.body_mass[b])
+        self._driven = set()
+        self._bottle_looks = {
+            name: BottleAppearance(self.sim, name, obj.shape)
+            for name, obj in self.objects_dict.items()
+            if obj.category_name == "inspection_bottle"
+        }
 
-    # Bottles tilted more than this are treated as knocked over and not carried.
-    _MAX_CARRY_TILT_COS = np.cos(np.radians(30))
+    def _reset_internal(self):
+        super()._reset_internal()
+        if self._bottle_looks:
+            self.randomize_bottles()
 
-    def _bottles_on_belt(self):
-        """(qpos, qvel) addresses of bottles currently in contact with the belt surface."""
+    # ---- inspection bottles -------------------------------------------------------------
+    def randomize_bottles(self, rng=None):
+        """Choose which inspection bottles are defective (and how) and redraw all of them.
+
+        Uses the global numpy RNG by default, so seeding np.random before reset() makes the
+        whole episode reproducible.
+        """
+        rng = np.random.default_rng(np.random.randint(2**31)) if rng is None else rng
+        names = sorted(self._bottle_looks)
+        probs = np.asarray(self.defect_count_probs[: len(names) + 1], float)
+        n_bad = int(rng.choice(len(probs), p=probs / probs.sum()))
+        bad = set(rng.choice(names, size=n_bad, replace=False)) if n_bad else set()
+        for name in names:
+            options = [d for d in self.defect_types if d in self.bottle_shapes[name].defects]
+            self.set_bottle_defect(name, rng.choice(options) if name in bad and options else None, rng)
+            # Random yaw, so labels and defects face any direction (bottles stay upright).
+            joint = self.objects_dict[name].joints[-1]
+            qpos = self.sim.data.get_joint_qpos(joint).copy()
+            yaw = rng.uniform(0, 2 * np.pi)
+            qpos[3:7] = [np.cos(yaw / 2), 0.0, 0.0, np.sin(yaw / 2)]
+            self.sim.data.set_joint_qpos(joint, qpos)
+        self.sim.forward()
+
+    def set_bottle_defect(self, name, defect, rng=None):
+        """Redraw one inspection bottle as good (defect=None) or with the given defect type."""
+        defect = None if defect is None else str(defect)
+        self._bottle_looks[name].apply(self.sim, defect, rng)
+        self.bottle_defects[name] = defect
+        self.sim.forward()
+
+    @property
+    def inspection_bottles(self):
+        return sorted(self._bottle_looks)
+
+    @property
+    def bottle_shapes(self):
+        """Inspection bottle name -> its design (BottleShape)."""
+        return {name: look.shape for name, look in self._bottle_looks.items()}
+
+    @property
+    def defective_bottles(self):
+        return sorted(n for n, d in self.bottle_defects.items() if d is not None)
+
+    # ---- conveyor physics ---------------------------------------------------------------
+    # A bottle touching a belt surface is pulled towards the local belt velocity by a force
+    # at its centre of mass, capped at what friction could transmit (TRACTION_MU * m * g).
+    # Blocked bottles therefore slip instead of being shoved over, fallen bottles ride the
+    # belt like upright ones, and a stopped belt holds bottles in place.
+    BELT_SURFACE_FRICTION = 0.005
+    BOTTLE_FRICTION = 0.01
+    TRACTION_GAIN = 40.0     # 1/s: how quickly a bottle takes up the belt speed
+    TRACTION_MU = 0.8
+    CENTERING_GAIN = 3.0     # 1/s: pulls bottles onto the centreline of the bend and exit belt
+    FUNNEL_LENGTH = 0.2      # the main belt starts centring bottles this far before the bend
+
+    def _contacts_on_belt(self):
+        """Root body ids of bottles currently touching any conveyor surface."""
         model, data = self.sim.model, self.sim.data
-        on_belt = set()
+        roots = set()
         for i in range(data.ncon):
-            contact = data.contact[i]
-            if contact.geom1 == self._belt_geom_id:
-                other = contact.geom2
-            elif contact.geom2 == self._belt_geom_id:
-                other = contact.geom1
+            c = data.contact[i]
+            if c.geom1 in self._belt_geom_ids:
+                other = c.geom2
+            elif c.geom2 in self._belt_geom_ids:
+                other = c.geom1
             else:
                 continue
             root = model.body_rootid[model.geom_bodyid[other]]
             if root in self._bottle_root_to_adr:
-                on_belt.add(self._bottle_root_to_adr[root])
-        return on_belt
+                roots.add(root)
+        return roots
+
+    def belt_velocity(self, x, y):
+        """Conveyor surface velocity (vx, vy) at world position (x, y)."""
+        main = self.belt_speed if self.belt_active else 0.0
+        lay = self.belt_layout
+        if lay is None or x >= lay.x_end:
+            vy = 0.0
+            if lay is not None:     # funnel bottles towards the bend's centreline
+                vy = -self.CENTERING_GAIN * y * np.clip((lay.x_end + self.FUNNEL_LENGTH - x) / self.FUNNEL_LENGTH, 0, 1)
+            return np.array([-main, vy])
+        speed = self.exit_speed if self.exit_speed is not None else 3.0 * self.belt_speed
+        cx, cy = lay.center
+        if y >= cy:                 # in the bend
+            dx, dy = x - cx, y - cy
+            r = np.hypot(dx, dy)
+            tangent = np.array([-dy, dx]) / max(r, 1e-6)
+            normal = np.array([dx, dy]) / max(r, 1e-6)
+            return speed * tangent - self.CENTERING_GAIN * (r - lay.radius) * normal
+        return np.array([-self.CENTERING_GAIN * (x - lay.exit_x), -speed])   # exit belt
 
     def _pre_action(self, action, policy_step=False):
         super()._pre_action(action, policy_step=policy_step)
-        if not self.belt_active:
-            return
-        # Conveyor transport. The belt geom is static, so friction against it would
-        # tip a bottle that is pushed along at belt speed. Instead, a bottle that is
-        # touching the belt and roughly upright is carried at the belt velocity
-        # (no sideways drift, no spin) with its tilt removed (yaw kept). Bottles
-        # lifted off the belt (e.g. grasped) or knocked over are left to the physics.
-        qpos_all, qvel_all = self.sim.data.qpos, self.sim.data.qvel
-        for qpos_adr, qvel_adr in self._bottles_on_belt():
-            w, x, y, z = qpos_all[qpos_adr + 3 : qpos_adr + 7]  # MuJoCo quat: w, x, y, z
-            up_z = 1.0 - 2.0 * (x * x + y * y)  # z-component of the bottle's up axis
-            if up_z < self._MAX_CARRY_TILT_COS:
-                continue
-            yaw_norm = np.hypot(w, z)
-            qpos_all[qpos_adr + 3 : qpos_adr + 7] = [w / yaw_norm, 0.0, 0.0, z / yaw_norm]
-
-            qvel = qvel_all[qvel_adr : qvel_adr + 6].copy()
-            qvel[0] = -self.belt_speed  # along the belt (-x)
-            qvel[1] = 0.0               # across the belt
-            qvel[3:6] = 0.0             # no rotation
-            qvel_all[qvel_adr : qvel_adr + 6] = qvel
+        model, data = self.sim.model, self.sim.data
+        on_belt = self._contacts_on_belt()
+        for root in self._driven - on_belt:
+            data.xfrc_applied[self._mass_body[root]] = 0.0
+        g = -model.opt.gravity[2]
+        for root in on_belt:
+            _, dof = self._bottle_root_to_adr[root]
+            mass = model.body_subtreemass[root]
+            body = self._mass_body[root]
+            x, y = data.xipos[body][:2]
+            dv = self.belt_velocity(x, y) - data.qvel[dof:dof + 2]
+            force = mass * self.TRACTION_GAIN * dv
+            cap = self.TRACTION_MU * mass * g
+            norm = np.linalg.norm(force)
+            if norm > cap:
+                force *= cap / norm
+            data.xfrc_applied[body, :2] = force
+            # damp spinning about the vertical, as belt friction would (free-joint angular
+            # velocity is in the body frame; the applied torque is in the world frame)
+            w_world = data.xmat[root].reshape(3, 3) @ data.qvel[dof + 3:dof + 6]
+            data.xfrc_applied[body, 5] = -self.TRACTION_GAIN * 1e-4 * w_world[2]
+        self._driven = on_belt
 
     def _load_fixtures_in_arena(self, mujoco_arena):
         for fixture_category in list(self.parsed_problem["fixtures"].keys()):
@@ -204,6 +356,11 @@ class Conveyor_Belt_Manipulation(BDDLBaseDomain):
                     self.visualization_sites_list.append(name)
 
     def _check_success(self):
+        if self._bottle_looks:
+            # Inspection line: every defective bottle rejected, and no good bottle.
+            region = "reject_bin_1_contain_region"
+            in_bin = {n: bool(self._eval_predicate(["in", n, region])) for n in self._bottle_looks}
+            return all(in_bin[n] == (self.bottle_defects.get(n) is not None) for n in in_bin)
         goal_state = self.parsed_problem["goal_state"]
         result = True
         for state in goal_state:
@@ -260,3 +417,37 @@ class Conveyor_Belt_Manipulation(BDDLBaseDomain):
             pos=[0.8, 0.0, 1.35],
             quat=[0.56, 0.43, 0.43, 0.56],
         )
+        # Close side view: inspection station, robot pick and reject bin.
+        pos, target = [0.15, 1.3, 1.62], [-0.25, 0.0, 1.08]
+        mujoco_arena.set_camera(camera_name="sideview", pos=pos, quat=_look_at_quat(pos, target),
+                                camera_attribs={"fovy": "47"})
+        # Overview of the whole line: inspection station, robot and bin, bend, exit belt, carton.
+        pos, target = [0.8, -2.0, 2.0], [-0.25, -0.8, 0.78]
+        mujoco_arena.set_camera(camera_name="lineview", pos=pos, quat=_look_at_quat(pos, target),
+                                camera_attribs={"fovy": "40"})
+        # Inspection station: two cameras facing each other across the belt, slightly above
+        # bottle mid-height, each with its own light, so every side of a bottle is seen.
+        x, d = self.INSPECTION_X, self.INSPECTION_CAM_DIST
+        target = [x, 0.0, self.INSPECTION_TARGET_Z]
+        for name, side in zip(self.INSPECTION_CAMERAS, (-1.0, 1.0)):
+            pos = [x, side * d, self.INSPECTION_CAM_Z]
+            mujoco_arena.set_camera(
+                camera_name=name, pos=pos, quat=_look_at_quat(pos, target),
+                camera_attribs={"fovy": str(self.INSPECTION_CAM_FOVY)},
+            )
+            mujoco_arena.worldbody.append(new_element(
+                tag="light", name=f"{name}_light", pos=f"{x - 0.05} {side * 0.25} 1.15",
+                dir=f"0.15 {-side * 0.85} -0.5", directional="false", castshadow="false",
+                diffuse="0.45 0.45 0.45", specular="0.3 0.3 0.3",
+            ))
+        # Overhead RGB-D camera for the bottle detector, under the inspection gantry's light bar.
+        # Identity orientation = looking straight down, image right = +x (downstream is left).
+        cx, cy, cz = self.TRACK_CAM_POS
+        mujoco_arena.set_camera(camera_name=self.TRACK_CAMERA, pos=list(self.TRACK_CAM_POS), quat=[1, 0, 0, 0],
+                                camera_attribs={"fovy": str(self.TRACK_CAM_FOVY)})
+        for k, (pos, size, rgba) in enumerate((
+                ([cx, cy, cz + 0.026], [0.035, 0.03, 0.02], "0.15 0.15 0.16 1"),        # body, under the light bar
+                ([cx, cy, cz + 0.004], [0.012, 0.012, 0.004], "0.05 0.05 0.06 1"))):    # lens
+            mujoco_arena.worldbody.append(new_element(
+                tag="geom", name=f"track_cam_housing{k}", type="box", pos=" ".join(map(str, pos)),
+                size=" ".join(map(str, size)), rgba=rgba, group="1", contype="0", conaffinity="0"))

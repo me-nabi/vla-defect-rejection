@@ -1,6 +1,7 @@
 *~
 .hydra
 *pyc
+__pycache__/
 datasets
 results
 outputs/*
@@ -14,15 +15,44 @@ bert/
 logs/
 
 *.mp4
-libero.egg-info/
-.vscode/
+*.egg-info/
+.ipynb_checkpoints/
 
-# --- vla-defect-rejection: large data and generated outputs (keep out of git) ---
+# Editors, OS, local environments and secrets
+.vscode/
+.idea/
+.DS_Store
+.venv/
+venv/
+.env
+.env.*
+
+# Datasets and SmolVLA training outputs
 demos/
 lerobot_dataset/
 training_output/
 rollout_frames/
 *.hdf5
+
+# Model weights (too large for git; the metric reports in inspection_models/*.json are kept)
 *.safetensors
+*.pt
+*.pth
+*.ckpt
+
+# Inspection and detection datasets (regenerate with inspection/generate_*.py)
+inspection_data/
+inspection_data_v1/
+detection_data/
+
+# Logs and one-off images in the repo root
 training_log*.txt
+*.log
+nohup.out
 /*.png
+/*.jpg
+/*.gif
+
+# Result images for the docs. Do NOT ignore *.png everywhere: the simulation loads the
+# textures under libero/libero/assets/ and fails without them.
+docs/media/*.png

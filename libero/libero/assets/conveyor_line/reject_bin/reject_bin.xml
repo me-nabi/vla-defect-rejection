@@ -1,0 +1,81 @@
+<mujoco model="reject_bin">
+  <asset>
+    <!-- Cardboard reject box. Textures come from tools/make_warehouse_textures.py. -->
+    <texture name="bin_cardboard_tex" type="2d" file="cardboard.png"/>
+    <texture name="bin_label_tex" type="2d" file="reject_label.png"/>
+    <material name="bin_cardboard" texture="bin_cardboard_tex" specular="0.05" shininess="0.05"/>
+    <material name="bin_label" texture="bin_label_tex" specular="0.1" shininess="0.1" emission="0.15"/>
+  </asset>
+  <worldbody>
+    <body>
+      <body name="object">
+        <!-- Bottom. Weighted (1.5 kg) so a dropped bottle or a brush from the gripper
+             can't tip or slide the bin; at the old ~77 g it could fall off the belt. -->
+        <geom type="box" size="0.08 0.06 0.003" pos="0 0 0.003"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              mass="1.5" friction="0.95 0.3 0.1"
+              group="0" rgba="0 0 0 0"/>
+        <!-- Front wall -->
+        <geom type="box" size="0.08 0.003 0.04" pos="0 -0.057 0.043"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="200" friction="0.95 0.3 0.1"
+              group="0" rgba="0 0 0 0"/>
+        <!-- Back wall -->
+        <geom type="box" size="0.08 0.003 0.04" pos="0 0.057 0.043"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="200" friction="0.95 0.3 0.1"
+              group="0" rgba="0 0 0 0"/>
+        <!-- Left wall -->
+        <geom type="box" size="0.003 0.06 0.04" pos="-0.077 0 0.043"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="200" friction="0.95 0.3 0.1"
+              group="0" rgba="0 0 0 0"/>
+        <!-- Right wall -->
+        <geom type="box" size="0.003 0.06 0.04" pos="0.077 0 0.043"
+              solimp="0.998 0.998 0.001" solref="0.001 1"
+              density="200" friction="0.95 0.3 0.1"
+              group="0" rgba="0 0 0 0"/>
+
+        <!-- Visual duplicates -->
+        <geom type="box" size="0.08 0.06 0.003" pos="0 0 0.003"
+              conaffinity="0" contype="0" group="1" material="bin_cardboard"/>
+        <geom type="box" size="0.08 0.003 0.04" pos="0 -0.057 0.043"
+              conaffinity="0" contype="0" group="1" material="bin_cardboard"/>
+        <geom type="box" size="0.08 0.003 0.04" pos="0 0.057 0.043"
+              conaffinity="0" contype="0" group="1" material="bin_cardboard"/>
+        <geom type="box" size="0.003 0.06 0.04" pos="-0.077 0 0.043"
+              conaffinity="0" contype="0" group="1" material="bin_cardboard"/>
+        <geom type="box" size="0.003 0.06 0.04" pos="0.077 0 0.043"
+              conaffinity="0" contype="0" group="1" material="bin_cardboard"/>
+
+        <!-- Flaps folded out and down by 28 degrees (visual only) -->
+        <geom type="box" size="0.082 0.0225 0.0015" pos="0 0.07987 0.07244" quat="0.970296 -0.241922 0 0"
+              conaffinity="0" contype="0" density="0" group="1" material="bin_cardboard"/>
+        <geom type="box" size="0.082 0.0225 0.0015" pos="0 -0.07987 0.07244" quat="0.970296 0.241922 0 0"
+              conaffinity="0" contype="0" density="0" group="1" material="bin_cardboard"/>
+        <geom type="box" size="0.0225 0.062 0.0015" pos="0.09987 0 0.07244" quat="0.970296 0 0.241922 0"
+              conaffinity="0" contype="0" density="0" group="1" material="bin_cardboard"/>
+        <geom type="box" size="0.0225 0.062 0.0015" pos="-0.09987 0 0.07244" quat="0.970296 0 -0.241922 0"
+              conaffinity="0" contype="0" density="0" group="1" material="bin_cardboard"/>
+
+        <!-- Red REJECT labels on the outside of the walls. Plates are thin along their local z,
+             turned to face outwards, because MuJoCo projects 2D textures through local XY. -->
+        <geom type="box" size="0.045 0.016 0.0008" pos="0.0808 0 0.036" quat="0.5 0.5 0.5 0.5"
+              conaffinity="0" contype="0" density="0" group="1" material="bin_label"/>
+        <geom type="box" size="0.045 0.016 0.0008" pos="-0.0808 0 0.036" quat="0.5 0.5 -0.5 -0.5"
+              conaffinity="0" contype="0" density="0" group="1" material="bin_label"/>
+        <geom type="box" size="0.064 0.016 0.0008" pos="0 0.0608 0.036" quat="0 0 0.707107 0.707107"
+              conaffinity="0" contype="0" density="0" group="1" material="bin_label"/>
+        <geom type="box" size="0.064 0.016 0.0008" pos="0 -0.0608 0.036" quat="0.707107 0.707107 0 0"
+              conaffinity="0" contype="0" density="0" group="1" material="bin_label"/>
+
+        <!-- Containment site for In predicate -->
+        <site name="contain_region" pos="0 0 0.04" size="0.075 0.055 0.06"
+              rgba="0 0 0 0" type="box"/>
+      </body>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0" name="bottom_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0.083" name="top_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0.08 0.06 0" name="horizontal_radius_site"/>
+    </body>
+  </worldbody>
+</mujoco>

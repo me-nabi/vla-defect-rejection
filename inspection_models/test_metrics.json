@@ -1,0 +1,92 @@
+{
+  "test_pairs": 2500,
+  "threshold": 0.38499999999999995,
+  "accuracy": 0.9964,
+  "defect_recall": 0.9935222672064777,
+  "false_flag_rate": 0.0007905138339920949,
+  "balanced_accuracy": 0.9963658766862429,
+  "type_accuracy": 0.9944,
+  "recall_per_defect": {
+    "crack": 1.0,
+    "chip": 0.9826589595375722,
+    "missing_cap": 1.0,
+    "tilted_cap": 1.0,
+    "low_fill": 1.0,
+    "particle": 0.9758454106280193
+  },
+  "confusion_matrix": [
+    [
+      1265,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      2,
+      200,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      4,
+      3,
+      166,
+      0,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      217,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      205,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      231,
+      0
+    ],
+    [
+      5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      202
+    ]
+  ],
+  "classes": [
+    "good",
+    "crack",
+    "chip",
+    "missing_cap",
+    "tilted_cap",
+    "low_fill",
+    "particle"
+  ],
+  "checkpoint_epoch": 11
+}

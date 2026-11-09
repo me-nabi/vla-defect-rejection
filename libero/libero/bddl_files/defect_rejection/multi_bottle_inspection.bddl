@@ -5,42 +5,42 @@
       (bottle_spawn_1
           (:target conveyor_belt)
           (:ranges (
-              (0.58 -0.04 0.66 0.04)
+              (0.825 -0.03 0.855 0.03)
             )
           )
       )
       (bottle_spawn_2
           (:target conveyor_belt)
           (:ranges (
-              (0.44 -0.04 0.52 0.04)
+              (0.695 -0.03 0.725 0.03)
             )
           )
       )
       (bottle_spawn_3
           (:target conveyor_belt)
           (:ranges (
-              (0.30 -0.04 0.38 0.04)
+              (0.565 -0.03 0.595 0.03)
             )
           )
       )
       (bottle_spawn_4
           (:target conveyor_belt)
           (:ranges (
-              (0.16 -0.04 0.24 0.04)
+              (0.435 -0.03 0.465 0.03)
             )
           )
       )
       (bottle_spawn_5
           (:target conveyor_belt)
           (:ranges (
-              (0.02 -0.04 0.10 0.04)
+              (0.305 -0.03 0.335 0.03)
             )
           )
       )
       (bin_region
           (:target conveyor_belt)
           (:ranges (
-              (-0.01 0.12 0.01 0.15)
+              (-0.21 0.048 -0.03 0.218)
             )
           )
       )
@@ -54,31 +54,30 @@
   )
 
   (:objects
-    good_bottle_1 good_bottle_2 good_bottle_3 - good_bottle
-    glass_bottle_1 glass_bottle_2 - glass_bottle
+    bottle_1 bottle_2 bottle_3 bottle_4 bottle_5 - inspection_bottle
     reject_bin_1 - reject_bin
   )
 
   (:obj_of_interest
-    good_bottle_1
-    glass_bottle_1
-    good_bottle_2
-    glass_bottle_2
-    good_bottle_3
+    bottle_1
+    bottle_2
+    bottle_3
+    bottle_4
+    bottle_5
     reject_bin_1
   )
 
   (:init
-    (On good_bottle_1 conveyor_belt_bottle_spawn_1)
-    (On glass_bottle_1 conveyor_belt_bottle_spawn_2)
-    (On good_bottle_2 conveyor_belt_bottle_spawn_3)
-    (On glass_bottle_2 conveyor_belt_bottle_spawn_4)
-    (On good_bottle_3 conveyor_belt_bottle_spawn_5)
+    (On bottle_1 conveyor_belt_bottle_spawn_1)
+    (On bottle_2 conveyor_belt_bottle_spawn_2)
+    (On bottle_3 conveyor_belt_bottle_spawn_3)
+    (On bottle_4 conveyor_belt_bottle_spawn_4)
+    (On bottle_5 conveyor_belt_bottle_spawn_5)
     (On reject_bin_1 conveyor_belt_bin_region)
   )
 
   (:goal
-    (And (In glass_bottle_1 reject_bin_1_contain_region) (In glass_bottle_2 reject_bin_1_contain_region))
+    (And)
   )
 
 )
