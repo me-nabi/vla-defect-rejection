@@ -15,6 +15,14 @@ position (trigger jitter and across-belt offset), neighbouring bottles, light in
 and positions, and a few millimetres / a degree of camera pose. Images go through the station's camera model (sensor noise + JPEG). Writes
 images/*.jpg and labels.csv. --stress widens the lighting and camera randomization beyond
 the training range and doubles the sensor noise, to measure robustness.
+
+--station pick renders from the close-up cameras at the pick area (env.PICK_CAMERAS, 512 px
+by default) instead, for training a policy that judges the bottle it is about to pick. The
+bottle is placed anywhere in the stretch where it is judged on its way in (PICK_WINDOW), some
+samples have no bottle in that stretch (label "none"), and the hard defects (crack, chip,
+particle) get more samples. Example:
+
+    python -m inspection.generate_dataset --station pick --out pick_data/train --n 20000 --seed 10
 """
 import argparse
 import csv
@@ -30,12 +38,14 @@ import robosuite.utils.transform_utils as T
 from PIL import Image
 
 import pipeline_demo as line
-from inspection.model import CLASSES
+from inspection.model import CLASSES, IMAGE_SIZE
 from inspection.station import JPEG_QUALITY, SENSOR_NOISE, add_sensor_noise, render_views
 
 BELT_Z = 0.9
 FAR_X = 0.86        # parking spot for bottles that should be out of view
 RESET_EVERY = 40    # samples per scene build (each build draws new bottle designs)
+PICK_WINDOW = (0.02, 0.10)   # x stretch in which a bottle arriving at the pick area is judged
+DEFECT_WEIGHTS = {"crack": 1.4, "chip": 1.4, "particle": 1.4, "missing_cap": 0.7}   # pick station only
 
 
 def set_pose(env, name, x, y, yaw):
@@ -49,13 +59,13 @@ def set_pose(env, name, x, y, yaw):
 class DomainRandomizer:
     """Small random changes to lights and inspection-camera poses, undone by restore()."""
 
-    def __init__(self, env, strength=1.0):
+    def __init__(self, env, strength=1.0, cameras=None):
         m = env.sim.model
         self.env = env
         self.k = strength
         self.light_diffuse = m.light_diffuse.copy()
         self.light_pos = m.light_pos.copy()
-        self.cams = [m.camera_name2id(c) for c in env.INSPECTION_CAMERAS]
+        self.cams = [m.camera_name2id(c) for c in (cameras or env.INSPECTION_CAMERAS)]
         self.cam_pos = m.cam_pos[self.cams].copy()
         self.cam_quat = m.cam_quat[self.cams].copy()
 
@@ -78,7 +88,13 @@ def main():
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--good-fraction", type=float, default=0.5)
     p.add_argument("--stress", action="store_true", help="harsher lighting/camera randomization and 2x sensor noise")
+    p.add_argument("--station", choices=("inspection", "pick"), default="inspection",
+                   help="which camera pair: the inspection station or the close-up cameras at the pick area")
+    p.add_argument("--size", type=int, default=None, help="image size (default 320 inspection, 512 pick)")
+    p.add_argument("--none-fraction", type=float, default=0.06, help="pick station: samples with no bottle to judge")
     args = p.parse_args()
+    pick = args.station == "pick"
+    size = args.size or (512 if pick else IMAGE_SIZE)
 
     rng = np.random.default_rng(args.seed)
     np.random.seed(args.seed)
@@ -88,27 +104,46 @@ def main():
     env = line.make_env(record=False)
     noise = 2 * SENSOR_NOISE if args.stress else SENSOR_NOISE
     defects = CLASSES[1:]
-    x0 = env.INSPECTION_X
+    weights = np.array([DEFECT_WEIGHTS.get(d, 1.0) if pick else 1.0 for d in defects])
+    cameras = env.PICK_CAMERAS if pick else env.INSPECTION_CAMERAS
 
     with open(os.path.join(args.out, "labels.csv"), "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["idx", "label", "front", "back", "design"])
+        writer.writerow(["idx", "label", "front", "back", "design", "x"])
         for i in range(args.n):
             if i % RESET_EVERY == 0:
                 env.reset()                       # hard reset: new bottle designs
                 env.belt_active = False
-                rand = DomainRandomizer(env, strength=2.0 if args.stress else 1.0)
+                rand = DomainRandomizer(env, strength=2.0 if args.stress else 1.0, cameras=cameras)
                 bottles = env.inspection_bottles
                 shapes = env.bottle_shapes
+            if pick and rng.random() < args.none_fraction:
+                label = "none"           # nothing in the judging stretch: bottles just before and after it
+                a, b, *rest = rng.permutation(bottles)
+                set_pose(env, a, PICK_WINDOW[1] + rng.uniform(0.03, 0.10), rng.uniform(-0.03, 0.03), rng.uniform(0, 2 * np.pi))
+                set_pose(env, b, PICK_WINDOW[0] - rng.uniform(0.02, 0.12), rng.uniform(-0.03, 0.03), rng.uniform(0, 2 * np.pi))
+                for name in (a, b):
+                    env.set_bottle_defect(name, str(rng.choice(shapes[name].defects)) if rng.random() < 0.3 else None, rng)
+                for k, name in enumerate(rest):
+                    set_pose(env, name, FAR_X + 0.1 * k, 0.0, 0.0)
+                rand.apply(rng)
+                env.sim.forward()
+                views = [add_sensor_noise(v, rng, noise) for v in render_views(env, size, cameras)]
+                names = (f"{i:06d}_front.jpg", f"{i:06d}_back.jpg")
+                for img, fn in zip(views, names):
+                    Image.fromarray(img).save(os.path.join(img_dir, fn), quality=JPEG_QUALITY)
+                writer.writerow([i, label, *names, "", ""])
+                continue
             while True:
-                label = "good" if rng.random() < args.good_fraction else str(rng.choice(defects))
+                label = "good" if rng.random() < args.good_fraction else str(rng.choice(defects, p=weights / weights.sum()))
                 able = [b for b in bottles if label == "good" or label in shapes[b].defects]
                 if able:
                     break
             target = str(rng.choice(able))
             up, down, *rest = rng.permutation([b for b in bottles if b != target])
             env.set_bottle_defect(target, None if label == "good" else label, rng)
-            set_pose(env, target, x0 + rng.uniform(-0.003, 0.0), rng.uniform(-0.03, 0.03), rng.uniform(0, 2 * np.pi))
+            x0 = rng.uniform(*PICK_WINDOW) if pick else env.INSPECTION_X + rng.uniform(-0.003, 0.0)
+            set_pose(env, target, x0, rng.uniform(-0.03, 0.03), rng.uniform(0, 2 * np.pi))
             for neighbour, sign in ((up, 1), (down, -1)):     # bottles before/after it on the belt
                 env.set_bottle_defect(neighbour, str(rng.choice(shapes[neighbour].defects)) if rng.random() < 0.3 else None, rng)
                 set_pose(env, neighbour, x0 + sign * rng.uniform(0.10, 0.16), rng.uniform(-0.03, 0.03), rng.uniform(0, 2 * np.pi))
@@ -117,11 +152,11 @@ def main():
             rand.apply(rng)
             env.sim.forward()
             # Same camera model as InspectionStation.capture: sensor noise, then JPEG.
-            views = [add_sensor_noise(v, rng, noise) for v in render_views(env)]
+            views = [add_sensor_noise(v, rng, noise) for v in render_views(env, size, cameras)]
             names = (f"{i:06d}_front.jpg", f"{i:06d}_back.jpg")
             for img, fn in zip(views, names):
                 Image.fromarray(img).save(os.path.join(img_dir, fn), quality=JPEG_QUALITY)
-            writer.writerow([i, label, *names, shapes[target].name])
+            writer.writerow([i, label, *names, shapes[target].name, f"{x0:.4f}"])
             if (i + 1) % 500 == 0:
                 print(f"  {i + 1}/{args.n}", flush=True)
     env.close()

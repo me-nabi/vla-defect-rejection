@@ -43,10 +43,10 @@ SENSOR_NOISE = 2.5      # std of additive Gaussian noise, in 8-bit grey levels
 JPEG_QUALITY = 92
 
 
-def render_views(env, size=IMAGE_SIZE):
-    """(front, back) clean uint8 renders from the two inspection cameras, upright."""
+def render_views(env, size=IMAGE_SIZE, cameras=None):
+    """(front, back) clean uint8 renders from the two inspection cameras (or `cameras`), upright."""
     return tuple(env.sim.render(width=size, height=size, camera_name=cam)[::-1].copy()
-                 for cam in env.INSPECTION_CAMERAS)
+                 for cam in (cameras or env.INSPECTION_CAMERAS))
 
 
 def add_sensor_noise(img, rng, sigma=SENSOR_NOISE):

@@ -33,6 +33,12 @@ class Conveyor_Belt_Manipulation(BDDLBaseDomain):
     INSPECTION_TARGET_Z = 0.985     # belt surface 0.90 + 8.5 cm
     # Overhead RGB-D camera for the bottle detector: looks straight down at the belt from
     # just upstream of the inspection station to past the robot's pick zone.
+    # Close-up cameras at the pick area: same optics as the inspection station, centred on the
+    # stretch where an arriving bottle is judged (x = 0.02-0.10, just before it stops at ~0.04),
+    # so a policy without memory can judge the bottle it is about to pick. No extra light (it
+    # would change every other view) and no housing geometry.
+    PICK_CAM_X = 0.06
+    PICK_CAMERAS = ("pick_front", "pick_back")
     TRACK_CAMERA = "track_cam"
     TRACK_CAM_POS = (0.20, 0.0, 1.55)
     TRACK_CAM_FOVY = 42             # vertical (across the belt); 4:3 images span x = -0.19 .. 0.59
@@ -440,6 +446,12 @@ class Conveyor_Belt_Manipulation(BDDLBaseDomain):
                 dir=f"0.15 {-side * 0.85} -0.5", directional="false", castshadow="false",
                 diffuse="0.45 0.45 0.45", specular="0.3 0.3 0.3",
             ))
+        x = self.PICK_CAM_X
+        target = [x, 0.0, self.INSPECTION_TARGET_Z]
+        for name, side in zip(self.PICK_CAMERAS, (-1.0, 1.0)):
+            pos = [x, side * d, self.INSPECTION_CAM_Z]
+            mujoco_arena.set_camera(camera_name=name, pos=pos, quat=_look_at_quat(pos, target),
+                                    camera_attribs={"fovy": str(self.INSPECTION_CAM_FOVY)})
         # Overhead RGB-D camera for the bottle detector, under the inspection gantry's light bar.
         # Identity orientation = looking straight down, image right = +x (downstream is left).
         cx, cy, cz = self.TRACK_CAM_POS

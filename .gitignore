@@ -40,10 +40,14 @@ rollout_frames/
 *.pth
 *.ckpt
 
+# SmolVLA demonstration recordings (data_collection/record_demos.py)
+recordings/
+
 # Inspection and detection datasets (regenerate with inspection/generate_*.py)
 inspection_data/
 inspection_data_v1/
 detection_data/
+pick_data/
 
 # Logs and one-off images in the repo root
 training_log*.txt
